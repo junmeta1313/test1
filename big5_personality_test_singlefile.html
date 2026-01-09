@@ -1,0 +1,1245 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Big Five 성격 검사 (단일 파일 · 오프라인 실행)</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --card:#0f1733;
+      --card2:#111b3d;
+      --text:#e9edf7;
+      --muted:#aab4d6;
+      --line:rgba(255,255,255,.08);
+      --accent:#7aa2ff;
+      --accent2:#79f2c0;
+      --warn:#ffcc66;
+      --danger:#ff6b6b;
+      --shadow: 0 16px 60px rgba(0,0,0,.35);
+      --radius: 18px;
+      --radius2: 14px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Apple SD Gothic Neo","Noto Sans KR","Segoe UI", Roboto, Arial, "Helvetica Neue", sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 900px at 15% 10%, rgba(122,162,255,.22), transparent 55%),
+        radial-gradient(900px 900px at 85% 20%, rgba(121,242,192,.16), transparent 55%),
+        radial-gradient(800px 600px at 40% 110%, rgba(255,204,102,.12), transparent 55%),
+        linear-gradient(180deg, var(--bg), #070a16 60%, #050714);
+      min-height:100vh;
+      line-height:1.55;
+    }
+    a{color:inherit}
+    .wrap{max-width:1100px;margin:0 auto;padding:28px 18px 60px}
+    header{
+      position:sticky; top:0; z-index:30;
+      background: linear-gradient(180deg, rgba(11,16,32,.92), rgba(11,16,32,.70), transparent);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding:18px 0 10px;
+      margin:-18px 0 18px;
+    }
+    .top{
+      display:flex;gap:16px;align-items:center;justify-content:space-between;
+    }
+    .brand{
+      display:flex;gap:14px;align-items:center;
+    }
+    .logo{
+      width:44px;height:44px;border-radius:14px;
+      background: linear-gradient(135deg, rgba(122,162,255,.95), rgba(121,242,192,.95));
+      box-shadow: 0 12px 35px rgba(122,162,255,.25);
+      position:relative; overflow:hidden;
+    }
+    .logo:before{
+      content:"";
+      position:absolute; inset:-40%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.65), transparent 45%);
+      transform: rotate(20deg);
+      opacity:.9;
+    }
+    h1{
+      font-size:18px;margin:0;
+      letter-spacing:-.2px;
+    }
+    .sub{
+      font-size:12.5px;color:var(--muted);margin-top:2px;
+    }
+    .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    button, .btn{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color:var(--text);
+      border-radius: 14px;
+      padding:10px 12px;
+      cursor:pointer;
+      transition: transform .06s ease, background .15s ease, border-color .15s ease;
+      user-select:none;
+      font-weight:600;
+      letter-spacing:-.1px;
+    }
+    button:hover,.btn:hover{background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.14)}
+    button:active,.btn:active{transform: translateY(1px)}
+    button.primary{
+      background: linear-gradient(135deg, rgba(122,162,255,.92), rgba(121,242,192,.84));
+      border-color: transparent;
+      color:#07101c;
+      box-shadow: 0 14px 40px rgba(122,162,255,.16);
+    }
+    button.primary:hover{filter:brightness(1.03)}
+    button.danger{
+      background: rgba(255,107,107,.10);
+      border-color: rgba(255,107,107,.25);
+      color: #ffd3d3;
+    }
+    .grid{
+      display:grid; gap:16px;
+      grid-template-columns: 1.35fr .65fr;
+      align-items:start;
+    }
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+      header{position:relative}
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(15,23,51,.92), rgba(15,23,51,.86));
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .inner{padding:16px}
+    .card h2{
+      margin:0 0 6px;
+      font-size:15px;
+      letter-spacing:-.2px;
+    }
+    .card p{margin:8px 0;color:var(--muted);font-size:13.5px}
+    .hint{
+      display:flex;gap:10px;align-items:flex-start;
+      padding:12px 12px;
+      border:1px dashed rgba(255,255,255,.16);
+      border-radius: var(--radius2);
+      background: rgba(255,255,255,.03);
+      color:var(--muted);
+      font-size:13px;
+    }
+    .hint b{color:var(--text)}
+    .progressWrap{margin-top:12px}
+    .progressRow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .progressRow .pct{font-size:12px;color:var(--muted)}
+    .bar{
+      height:10px;border-radius: 999px; overflow:hidden;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .bar > i{
+      display:block;height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(122,162,255,.95), rgba(121,242,192,.90));
+      border-radius: 999px;
+      transition: width .25s ease;
+    }
+
+    .qCard{padding:0}
+    .qHead{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(17,27,61,.75), rgba(17,27,61,.25));
+    }
+    .qHead .left{display:flex;align-items:center;gap:10px}
+    .pill{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .pill.ok{border-color: rgba(121,242,192,.25); background: rgba(121,242,192,.10); color:#c8ffee}
+    .pill.bad{border-color: rgba(255,107,107,.25); background: rgba(255,107,107,.10); color:#ffd1d1}
+    .qList{padding:10px 12px 16px}
+    .qItem{
+      margin:10px 0;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.02);
+      border-radius: 14px;
+      overflow:hidden;
+    }
+    .qTitle{
+      display:flex;gap:10px;align-items:flex-start;
+      padding:12px 12px 10px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .qNum{
+      width:28px; height:28px; border-radius: 10px;
+      display:grid; place-items:center;
+      background: rgba(122,162,255,.14);
+      border:1px solid rgba(122,162,255,.18);
+      color:#dbe6ff;
+      font-weight:700;
+      flex:0 0 auto;
+    }
+    .qText{font-size:14.5px;color:var(--text);margin:0}
+    .qSub{font-size:12.5px;color:var(--muted);margin-top:4px}
+    .opts{
+      display:grid;
+      grid-template-columns: repeat(5, minmax(0,1fr));
+      gap:8px;
+      padding:10px 12px 12px;
+    }
+    @media (max-width: 640px){
+      .opts{grid-template-columns: 1fr}
+    }
+    label.opt{
+      display:flex; gap:10px; align-items:center;
+      padding:10px 10px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.09);
+      background: rgba(255,255,255,.03);
+      cursor:pointer;
+      transition: background .15s ease, border-color .15s ease, transform .06s ease;
+      font-size:13px;
+      color: var(--muted);
+      user-select:none;
+    }
+    label.opt:hover{background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.14)}
+    label.opt:active{transform: translateY(1px)}
+    input[type="radio"]{accent-color: var(--accent); transform: translateY(1px)}
+    label.opt.selected{
+      color: var(--text);
+      border-color: rgba(121,242,192,.30);
+      background: rgba(121,242,192,.10);
+    }
+
+    .side .card{position:sticky; top:86px}
+    @media (max-width: 980px){
+      .side .card{position:static}
+    }
+
+    .scoreGrid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    .metric{
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.02);
+      border-radius: 14px;
+      padding:12px 12px;
+    }
+    .metric .row{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+    .metric .name{font-weight:700;letter-spacing:-.2px}
+    .metric .val{font-size:12.5px;color:var(--muted)}
+    .meter{
+      margin-top:8px;
+      height:10px;border-radius: 999px; overflow:hidden;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .meter i{
+      display:block;height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(122,162,255,.95), rgba(121,242,192,.90));
+      border-radius: 999px;
+      transition: width .35s ease;
+    }
+
+    .result{
+      display:none;
+      margin-top:16px;
+    }
+    .result .inner{padding:16px}
+    .report{
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.02);
+      border-radius: 14px;
+      padding:14px 14px;
+      color: var(--text);
+      font-size:14px;
+      white-space:pre-wrap;
+    }
+    .small{
+      font-size:12.5px;color:var(--muted);
+    }
+    .toast{
+      position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
+      background: rgba(15,23,51,.92);
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow: 0 18px 50px rgba(0,0,0,.38);
+      border-radius: 999px;
+      padding:10px 14px;
+      display:none;
+      z-index:40;
+      max-width:min(92vw, 700px);
+      color: var(--text);
+      font-size:13px;
+    }
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      color: var(--text);
+    }
+    footer{margin-top:18px;color:var(--muted);font-size:12.5px}
+    .divider{height:1px;background:rgba(255,255,255,.08);margin:12px 0}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="top">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div>
+            <h1>Big Five 성격 검사 · 오프라인 단일 파일</h1>
+            <div class="sub">HTML5 · CSS3 · Vanilla JS · 서버/외부 라이브러리 없이 실행</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button id="btnAutofill" class="btn" type="button" title="데모용으로 임의 응답을 채웁니다">데모 채우기</button>
+          <button id="btnReset" class="danger" type="button">초기화</button>
+          <button id="btnSubmit" class="primary" type="button">제출</button>
+        </div>
+      </div>
+
+      <div class="progressWrap">
+        <div class="progressRow">
+          <div class="sub">진행률 <span class="kbd">1~5</span> 선택</div>
+          <div class="pct" id="progressText">0 / 20</div>
+        </div>
+        <div class="bar" aria-hidden="true"><i id="progressBar"></i></div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <main class="main">
+        <section class="card">
+          <div class="inner">
+            <h2>안내</h2>
+            <p>
+              아래 20문항은 <b>5요인 모델(Big Five)</b>을 참고해 구성했습니다.
+              각 문항은 “최근 6개월의 당신”을 기준으로 가장 가깝다고 느끼는 선택지를 고르세요.
+              (이 검사는 자기이해를 돕기 위한 참고용이며, 임상적 진단 도구가 아닙니다.)
+            </p>
+            <div class="hint">
+              <div>💡</div>
+              <div>
+                <b>팁</b> · 너무 오래 고민하기보다 “평소에 더 자주 나오는 모습”을 선택하면 정확도가 올라가요.
+                모든 계산과 리포트 생성은 <b>브라우저 내부에서만</b> 이루어지며, 외부로 전송되지 않습니다.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card qCard" style="margin-top:16px">
+          <div class="qHead">
+            <div class="left">
+              <h2 style="margin:0;font-size:15px">문항</h2>
+              <span class="pill" id="answerPill">미응답 있음</span>
+            </div>
+            <span class="pill" title="Big Five: O(개방성) C(성실성) E(외향성) A(친화성) N(신경성)">요인: O · C · E · A · N</span>
+          </div>
+          <div class="qList" id="questionList"></div>
+        </section>
+
+        <section class="card result" id="resultCard">
+          <div class="inner">
+            <h2>심층 리포트</h2>
+            <p class="small" id="resultMeta"></p>
+            <div class="report" id="reportBox"></div>
+            <div class="divider"></div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end">
+              <button class="btn" id="btnCopy" type="button">리포트 복사</button>
+              <button class="btn" id="btnDownloadTxt" type="button">TXT로 저장</button>
+              <button class="btn" id="btnPrint" type="button">인쇄</button>
+            </div>
+          </div>
+        </section>
+
+        <footer>
+          <div class="divider"></div>
+          <div>© 단일 파일 데모. 문항과 해석 로직은 교육/자기이해 목적의 예시이며, 전문 상담/진단을 대체하지 않습니다.</div>
+        </footer>
+      </main>
+
+      <aside class="side">
+        <section class="card">
+          <div class="inner">
+            <h2>요인 점수 요약</h2>
+            <p>각 요인은 4문항으로 측정되며, 일부 문항은 반대로 채점됩니다. (0~100으로 환산)</p>
+            <div class="scoreGrid" id="scoreGrid"></div>
+            <div class="divider"></div>
+            <p class="small">
+              참고: “높음/보통/낮음” 구분은 표준화 규준이 아니라, 이 검사 내 점수 범위를 기반으로 한 간이 기준입니다.
+            </p>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ====== 설문 구성 (20문항 / 5점 척도 / Big Five 기반) ======
+  // traits: O(개방성), C(성실성), E(외향성), A(친화성), N(신경성)
+  // reverse: true면 역채점 (6 - 선택값)
+  const QUESTIONS = [
+    // O (개방성)
+    { id: 1, trait:"O", reverse:false, text:"새로운 아이디어나 낯선 방식에 호기심이 생기면 직접 시도해 보는 편이다.", sub:"변화와 탐색 선호(개방성)" },
+    { id: 2, trait:"O", reverse:false, text:"예술·문화·철학 같은 추상적 주제에 대해 생각하거나 대화하는 것을 즐긴다.", sub:"관점 확장·상상력" },
+    { id: 3, trait:"O", reverse:true,  text:"익숙한 규칙에서 벗어난 방법은 대체로 불편하고 피하고 싶다.", sub:"새로움에 대한 불편감(역문항)" },
+    { id: 4, trait:"O", reverse:true,  text:"문제가 생기면 ‘늘 해오던 방식’이 제일 안전하다고 느낀다.", sub:"관성/보수성(역문항)" },
+
+    // C (성실성)
+    { id: 5, trait:"C", reverse:false, text:"목표를 세우면 마감과 절차를 정해 꾸준히 실행하려고 한다.", sub:"계획·지속" },
+    { id: 6, trait:"C", reverse:false, text:"실수 가능성을 줄이기 위해 체크리스트나 정리 습관을 만든다.", sub:"체계화·점검" },
+    { id: 7, trait:"C", reverse:true,  text:"해야 할 일을 미루다 마지막에 급하게 처리하는 일이 잦다.", sub:"지연/즉흥 처리(역문항)" },
+    { id: 8, trait:"C", reverse:true,  text:"정리정돈이나 시간관리가 전반적으로 잘 안 되는 편이다.", sub:"정돈·관리 어려움(역문항)" },
+
+    // E (외향성)
+    { id: 9,  trait:"E", reverse:false, text:"사람이 있는 자리에서 에너지가 충전되는 느낌이 든다.", sub:"사회적 에너지" },
+    { id:10,  trait:"E", reverse:false, text:"새로운 사람에게 먼저 말을 걸거나 분위기를 띄우는 편이다.", sub:"주도성·활력" },
+    { id:11,  trait:"E", reverse:true,  text:"여럿과 오래 함께 있으면 금방 지치고 혼자만의 시간이 꼭 필요하다.", sub:"사회적 피로(역문항)" },
+    { id:12,  trait:"E", reverse:true,  text:"내 의견을 공개적으로 말하기보다 조용히 관찰하는 편이 더 편하다.", sub:"표현 억제(역문항)" },
+
+    // A (친화성)
+    { id:13, trait:"A", reverse:false, text:"상대의 입장을 먼저 이해하려고 하고, 말투나 표현을 배려한다.", sub:"공감·배려" },
+    { id:14, trait:"A", reverse:false, text:"갈등이 생기면 ‘이기기’보다 ‘관계를 지키는 해결’을 선호한다.", sub:"협력·조정" },
+    { id:15, trait:"A", reverse:true,  text:"상대가 실수하면 마음속으로 쉽게 평가하거나 판단하는 편이다.", sub:"비판/경쟁(역문항)" },
+    { id:16, trait:"A", reverse:true,  text:"협업에서 타인의 요청을 들어주는 것보다 내 방식대로 가는 편이 낫다.", sub:"독립/비협조(역문항)" },
+
+    // N (신경성; 정서적 불안정)
+    { id:17, trait:"N", reverse:false, text:"작은 일에도 걱정이 길어져 머릿속에서 계속 맴도는 편이다.", sub:"걱정·반추" },
+    { id:18, trait:"N", reverse:false, text:"예상치 못한 변화가 생기면 긴장이나 불안이 빠르게 올라온다.", sub:"불확실성 민감" },
+    { id:19, trait:"N", reverse:true,  text:"스트레스를 받아도 감정이 크게 흔들리지 않고 비교적 빨리 안정된다.", sub:"정서적 회복(역문항)" },
+    { id:20, trait:"N", reverse:true,  text:"비판이나 거절을 겪어도 크게 개인적으로 받아들이지 않는 편이다.", sub:"자기방어·탄력성(역문항)" },
+  ];
+
+  const TRAITS = {
+    O: { name:"개방성(O)", desc:"새로움·호기심·상상력·관점 전환" },
+    C: { name:"성실성(C)", desc:"계획성·자기통제·책임감·꾸준함" },
+    E: { name:"외향성(E)", desc:"활력·사회적 에너지·표현·주도성" },
+    A: { name:"친화성(A)", desc:"공감·협력·신뢰·배려" },
+    N: { name:"신경성(N)", desc:"걱정·불안 민감도·정서 변동성" },
+  };
+
+  const SCALE_LABELS = ["전혀 아니다(1)", "아니다(2)", "보통이다(3)", "그렇다(4)", "매우 그렇다(5)"];
+
+  // ====== DOM ======
+  const $ = (q, el=document) => el.querySelector(q);
+  const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
+
+  const qList = $("#questionList");
+  const scoreGrid = $("#scoreGrid");
+  const progressText = $("#progressText");
+  const progressBar = $("#progressBar");
+  const answerPill = $("#answerPill");
+  const resultCard = $("#resultCard");
+  const reportBox = $("#reportBox");
+  const resultMeta = $("#resultMeta");
+  const toast = $("#toast");
+
+  // ====== 유틸 ======
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.style.display = "block";
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=> toast.style.display="none", 2400);
+  }
+
+  function traitLevel(pct){
+    // 간이 기준: 0~39 낮음, 40~69 보통, 70~100 높음
+    if (pct >= 70) return "높음";
+    if (pct >= 40) return "보통";
+    return "낮음";
+  }
+
+  function levelEmoji(level){
+    return level==="높음" ? "▲" : level==="낮음" ? "▼" : "●";
+  }
+
+  function fmt1(n){ return (Math.round(n*10)/10).toFixed(1); }
+
+  // ====== 렌더링 ======
+  function renderQuestions(){
+    qList.innerHTML = "";
+    const frag = document.createDocumentFragment();
+
+    QUESTIONS.forEach(q => {
+      const item = document.createElement("div");
+      item.className = "qItem";
+      item.dataset.qid = String(q.id);
+
+      const title = document.createElement("div");
+      title.className = "qTitle";
+      title.innerHTML = `
+        <div class="qNum">${q.id}</div>
+        <div>
+          <p class="qText">${escapeHtml(q.text)}</p>
+          <div class="qSub">${escapeHtml(q.sub)} · 요인: <b>${q.trait}</b>${q.reverse ? " · <span style='color:#ffd1d1'>역채점</span>" : ""}</div>
+        </div>
+      `;
+
+      const opts = document.createElement("div");
+      opts.className = "opts";
+
+      for (let v=1; v<=5; v++){
+        const id = `q${q.id}_${v}`;
+        const label = document.createElement("label");
+        label.className = "opt";
+        label.setAttribute("for", id);
+        label.innerHTML = `
+          <input id="${id}" type="radio" name="q${q.id}" value="${v}" />
+          <span>${SCALE_LABELS[v-1]}</span>
+        `;
+        opts.appendChild(label);
+      }
+
+      item.appendChild(title);
+      item.appendChild(opts);
+      frag.appendChild(item);
+    });
+
+    qList.appendChild(frag);
+
+    // 라벨 선택 표시
+    qList.addEventListener("change", (e) => {
+      const input = e.target;
+      if (!input || input.type !== "radio") return;
+
+      const box = input.closest(".qItem");
+      if (!box) return;
+
+      // 이 문항의 라벨 상태 갱신
+      $$(".opt", box).forEach(l => l.classList.remove("selected"));
+      const selectedLabel = input.closest("label.opt");
+      if (selectedLabel) selectedLabel.classList.add("selected");
+
+      updateProgress();
+      // 저장
+      persistAnswers();
+    });
+  }
+
+  function renderScoresEmpty(){
+    scoreGrid.innerHTML = "";
+    const frag = document.createDocumentFragment();
+    for (const k of Object.keys(TRAITS)){
+      const m = document.createElement("div");
+      m.className = "metric";
+      m.dataset.trait = k;
+      m.innerHTML = `
+        <div class="row">
+          <div class="name">${TRAITS[k].name}</div>
+          <div class="val"><span class="pct">-</span> · <span class="lvl">-</span></div>
+        </div>
+        <div class="meter"><i></i></div>
+        <div class="small" style="margin-top:8px">${TRAITS[k].desc}</div>
+      `;
+      frag.appendChild(m);
+    }
+    scoreGrid.appendChild(frag);
+  }
+
+  function updateScoreUI(traitToPct){
+    $$(".metric", scoreGrid).forEach(el => {
+      const t = el.dataset.trait;
+      const pct = traitToPct[t] ?? 0;
+      const lvl = traitLevel(pct);
+      $(".pct", el).textContent = `${fmt1(pct)}점`;
+      $(".lvl", el).textContent = `${levelEmoji(lvl)} ${lvl}`;
+      $("i", el).style.width = `${clamp(pct,0,100)}%`;
+    });
+  }
+
+  function updateProgress(){
+    const answered = countAnswered();
+    progressText.textContent = `${answered} / ${QUESTIONS.length}`;
+    progressBar.style.width = `${(answered / QUESTIONS.length) * 100}%`;
+
+    const ok = answered === QUESTIONS.length;
+    answerPill.textContent = ok ? "모두 응답" : "미응답 있음";
+    answerPill.className = "pill " + (ok ? "ok" : "bad");
+  }
+
+  function countAnswered(){
+    let n = 0;
+    for (const q of QUESTIONS){
+      if ($(`input[name="q${q.id}"]:checked`)) n++;
+    }
+    return n;
+  }
+
+  // ====== 점수 계산 ======
+  function computeScores(){
+    // raw: 각 요인 4~20
+    const raw = {O:0,C:0,E:0,A:0,N:0};
+    const detail = []; // 문항별 점수
+    for (const q of QUESTIONS){
+      const checked = $(`input[name="q${q.id}"]:checked`);
+      if (!checked) return null;
+      const v = Number(checked.value);
+      const scored = q.reverse ? (6 - v) : v;
+      raw[q.trait] += scored;
+      detail.push({qid:q.id, trait:q.trait, v, scored, reverse:q.reverse});
+    }
+    const pct = {};
+    for (const t of Object.keys(raw)){
+      // 4~20 -> 0~100
+      pct[t] = ((raw[t] - 4) / 16) * 100;
+      pct[t] = clamp(pct[t], 0, 100);
+    }
+    return {raw, pct, detail};
+  }
+
+  // ====== 리포트 생성 ======
+  function buildReport(scores){
+    const {raw, pct} = scores;
+
+    const lv = {
+      O: traitLevel(pct.O),
+      C: traitLevel(pct.C),
+      E: traitLevel(pct.E),
+      A: traitLevel(pct.A),
+      N: traitLevel(pct.N),
+    };
+
+    // 간단 지표(상호작용용)
+    const socialDrive = (pct.E*0.55 + pct.A*0.45);
+    const execution = (pct.C*0.70 + (100-pct.N)*0.30);
+    const creativity = (pct.O*0.70 + pct.E*0.30);
+    const harmony = (pct.A*0.65 + (100-pct.N)*0.35);
+    const riskOfBurnout = (pct.C*0.55 + pct.N*0.45);
+
+    const style = classifyProfile(pct);
+    const tags = buildKeywords(pct, style);
+
+    // 요인별 문장
+    const traitSection = [
+      traitParagraph("O", pct.O, lv.O),
+      traitParagraph("C", pct.C, lv.C),
+      traitParagraph("E", pct.E, lv.E),
+      traitParagraph("A", pct.A, lv.A),
+      traitParagraph("N", pct.N, lv.N),
+    ].join("\n\n");
+
+    const interactionSection = interactionParagraphs(pct, lv, {socialDrive, execution, creativity, harmony, riskOfBurnout});
+
+    const suggestions = developmentSuggestions(pct, lv, style);
+
+    const now = new Date();
+    const stamp = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")} ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+
+    const summary = `
+[요약 프로필]
+- 당신의 전반적 경향은 “${style.title}”에 가깝습니다.
+- 핵심 키워드: ${tags.join(" · ")}
+- 간이 지표(0~100): 사회적 추진력 ${fmt1(socialDrive)}, 실행/회복 ${fmt1(execution)}, 창의·탐색 ${fmt1(creativity)}, 관계 안정감 ${fmt1(harmony)}, 과부하 위험 ${fmt1(riskOfBurnout)}
+
+이 검사는 Big Five(개방성·성실성·외향성·친화성·신경성)를 바탕으로, 최근 6개월의 ‘반복되는 행동 패턴’을 추정합니다.
+점수는 “좋고 나쁨”이 아니라 “에너지의 방향”에 가깝습니다. 예를 들어 개방성이 높으면 새로움을 즐기지만, 반대로 익숙한 체계에서는 지루함을 느낄 수 있어요. 성실성이 높으면 신뢰를 얻지만, 완벽주의로 이어지면 피로가 늘 수 있습니다.
+`.trim();
+
+    const socialAttitude = socialAttitudeParagraph(pct, lv, style);
+    const workLearning = workLearningParagraph(pct, lv, style);
+    const potential = potentialParagraph(pct, lv, style);
+    const caution = cautionParagraph(pct, lv, style);
+
+    const closing = `
+[마무리]
+지금 나온 결과는 “현재의 습관적 선택”을 요약한 지도 같은 것입니다. 사람은 환경·역할·회복 상태에 따라 달라질 수 있어요.
+만약 결과가 낯설게 느껴진다면, (1) 최근 스트레스가 높았는지, (2) 일/학업/관계에서 요구되는 역할이 바뀌었는지, (3) 충분히 쉬고 있는지부터 점검해 보세요.
+원한다면 같은 문항을 2~3주 간격으로 다시 해보고, 점수가 어떻게 움직이는지 관찰하는 것도 좋은 자기이해 방법입니다.
+`.trim();
+
+    // 1000자 이상을 보장하기 위해(조건문이 짧게 나올 가능성 대비) 기본 설명 블록을 추가
+    const baseline = `
+[해석에 대한 짧은 참고]
+- “높음/보통/낮음”은 이 검사 내 점수 구간으로 나눈 간이 분류이며, 절대적인 우열을 뜻하지 않습니다.
+- 한 요인이 높을수록 ‘그 요인이 필요한 상황에서 강점이 잘 발휘’되지만, 반대로 과사용하면 비용(피로·갈등·경직)이 생길 수 있습니다.
+- 성격은 고정된 라벨이라기보다, 당신이 자주 선택해 온 방식의 평균에 가깝습니다. 따라서 목표(예: 더 침착해지기, 더 실행하기, 더 표현하기)에 따라 훈련으로 조정되는 부분이 많습니다.
+`.trim();
+
+    const scoreTable = `
+[점수(0~100)]
+- 개방성(O): ${fmt1(pct.O)} · ${lv.O}
+- 성실성(C): ${fmt1(pct.C)} · ${lv.C}
+- 외향성(E): ${fmt1(pct.E)} · ${lv.E}
+- 친화성(A): ${fmt1(pct.A)} · ${lv.A}
+- 신경성(N): ${fmt1(pct.N)} · ${lv.N}
+`.trim();
+
+    const report = [
+      `리포트 생성 시각: ${stamp}`,
+      scoreTable,
+      summary,
+      "\n[요인별 심층 해석]\n" + traitSection,
+      "\n[요인 간 상호작용 분석]\n" + interactionSection,
+      "\n[사회적 태도/대인관계]\n" + socialAttitude,
+      "\n[업무·학습 스타일]\n" + workLearning,
+      "\n[잠재 역량]\n" + potential,
+      "\n[주의 신호(스트레스/부하)]\n" + caution,
+      "\n[자기계발 제언(실행 가능한 루틴)]\n" + suggestions,
+      "\n" + baseline,
+      "\n" + closing
+    ].join("\n\n");
+
+    return {report, stamp, style, tags, indices:{socialDrive, execution, creativity, harmony, riskOfBurnout}};
+  }
+
+  function classifyProfile(pct){
+    // 몇 가지 대표 조합으로 “프로필” 라벨링(간이)
+    const O = pct.O, C=pct.C, E=pct.E, A=pct.A, N=pct.N;
+
+    // 결정 트리(가독성 우선)
+    if (C>=70 && N<40) return { title:"차분한 실행가", note:"계획과 꾸준함이 강점이며 감정 기복이 비교적 작습니다." };
+    if (O>=70 && E>=70) return { title:"탐색형 개척자", note:"새로움과 사람을 통해 기회를 넓히는 경향이 강합니다." };
+    if (A>=70 && N>=70) return { title:"민감한 공감가", note:"관계와 감정 신호에 민감하고 배려가 깊은 편입니다." };
+    if (C>=70 && N>=70) return { title:"완벽주의 성취가", note:"기준이 높고 성실하지만 부담이 쌓이면 소진에 취약할 수 있습니다." };
+    if (E<40 && O>=70) return { title:"조용한 창의가", note:"혼자 깊게 몰입하며 아이디어를 확장하는 타입입니다." };
+    if (E>=70 && A>=70) return { title:"관계 주도형 협업가", note:"사람을 연결하고 팀 분위기를 살리는 강점이 큽니다." };
+    if (N>=70 && C<40) return { title:"불안-분산형 탐색가", note:"걱정이 실행을 흔들 수 있어 구조화가 도움이 됩니다." };
+    if (A<40 && C>=70) return { title:"원칙 중심의 성과가", note:"성과 기준이 뚜렷하고 엄격할 수 있습니다." };
+    if (O<40 && C>=70) return { title:"안정 지향 운영가", note:"검증된 방식으로 꾸준히 성과를 쌓는 경향이 강합니다." };
+    return { title:"균형형 적응가", note:"상황에 따라 유연하게 강점을 배치하는 편입니다." };
+  }
+
+  function buildKeywords(pct, style){
+    const tags = [];
+    const add = (s) => { if (!tags.includes(s) && tags.length<7) tags.push(s); };
+
+    if (pct.O>=70) add("호기심/확장");
+    else if (pct.O<40) add("안정/검증");
+    else add("실용적 유연");
+
+    if (pct.C>=70) add("계획/완수");
+    else if (pct.C<40) add("자유/즉흥");
+    else add("적당한 구조");
+
+    if (pct.E>=70) add("표현/주도");
+    else if (pct.E<40) add("관찰/내향");
+    else add("상황적 사교");
+
+    if (pct.A>=70) add("협력/배려");
+    else if (pct.A<40) add("직설/경쟁");
+    else add("현실적 타협");
+
+    if (pct.N>=70) add("민감/경계");
+    else if (pct.N<40) add("침착/회복");
+    else add("보통의 긴장");
+
+    // 스타일 제목을 키워드로 한 번 더 보강
+    add(style.title);
+
+    return tags;
+  }
+
+  function traitParagraph(traitKey, pct, level){
+    const t = TRAITS[traitKey];
+    const p = fmt1(pct);
+
+    // 공통 서문
+    let out = `• ${t.name} (${p}점, ${levelEmoji(level)} ${level})\n  ${t.desc}\n`;
+
+    const high = (s) => out += "  " + s + "\n";
+    const mid  = (s) => out += "  " + s + "\n";
+    const low  = (s) => out += "  " + s + "\n";
+
+    if (traitKey==="O"){
+      if (level==="높음"){
+        high("새로운 자극을 통해 배움과 동기부여가 잘 생깁니다. ‘왜?’ ‘다른 방법은?’ 같은 질문이 자연스럽게 떠오르는 편이에요.");
+        high("강점: 혁신, 아이디어 발산, 관점 전환. 환경이 단조로울수록 창의적 탈출구를 찾습니다.");
+        high("주의: 현실 제약(시간/자원)을 과소평가하면 실행이 늘어질 수 있어요. 아이디어를 ‘작게 실험’으로 쪼개면 힘이 됩니다.");
+      } else if (level==="보통"){
+        mid("새로움과 익숙함 사이에서 균형을 잡는 편입니다. 실용성이 보이면 새로운 방식도 받아들이고, 불확실하면 검증을 원합니다.");
+        mid("강점: 상황 판단, 무리하지 않는 변화. 팀에서는 ‘현실적인 개선안’을 내는 역할이 잘 맞습니다.");
+        mid("주의: 바쁘거나 피곤할 때는 새로움을 회피해 성장 기회가 줄 수 있으니, 작은 호기심 루틴(주 1회 탐색)을 권합니다.");
+      } else {
+        low("익숙하고 검증된 방식에서 안정감을 느끼는 경향이 큽니다. 변화를 ‘필요할 때만’ 선택하는 편이에요.");
+        low("강점: 표준화, 안정적 운영, 리스크 관리. 반복 업무나 품질 유지에서 신뢰를 얻습니다.");
+        low("주의: 환경 변화가 빠를 때는 적응이 늦게 느껴질 수 있어요. ‘변화의 최소 단위’를 정해 조금씩 업데이트해 보세요.");
+      }
+    }
+
+    if (traitKey==="C"){
+      if (level==="높음"){
+        high("계획과 책임감이 강해, 주변이 ‘믿고 맡길 수 있다’고 느끼기 쉽습니다. 목표를 쪼개 실행하는 힘이 있어요.");
+        high("강점: 지속력, 자기관리, 품질. 장기 프로젝트에서 성과가 누적됩니다.");
+        high("주의: 기준이 높아지면 스스로를 몰아붙일 수 있습니다. ‘완벽’ 대신 ‘완료’를 우선하는 규칙을 한 줄로 정해두면 소진을 줄입니다.");
+      } else if (level==="보통"){
+        mid("필요할 때는 구조를 만들고, 상황에 따라 유연하게 조절하는 편입니다. 기본적인 책임감은 있지만 과도한 통제는 피하려 합니다.");
+        mid("강점: 균형감, 현실적 실행. 협업에서는 일정과 관계를 함께 고려하는 편입니다.");
+        mid("주의: 목표가 모호하면 미루기가 생길 수 있어요. 시작 장벽을 낮추는 ‘5분 착수’가 효과적입니다.");
+      } else {
+        low("자유도와 즉흥성이 비교적 큽니다. 흥미가 생기면 몰입하지만, 반복/정리/마감 같은 구조가 약점이 될 수 있어요.");
+        low("강점: 유연성, 즉시 대응, 새로운 시도. 예측 불가능한 상황에서 순발력이 돋보입니다.");
+        low("주의: 중요한 일은 ‘기분’에 맡기면 불안정해질 수 있습니다. 아주 작은 체크리스트(오늘 3개)만으로도 성실성이 크게 보완됩니다.");
+      }
+    }
+
+    if (traitKey==="E"){
+      if (level==="높음"){
+        high("대인 상호작용에서 에너지를 얻고, 표현과 추진이 빠른 편입니다. 분위기 메이커/촉진자 역할을 자연스럽게 맡기도 해요.");
+        high("강점: 네트워킹, 설득, 실행 촉진. 팀에서 속도를 올리는 데 기여합니다.");
+        high("주의: 혼자 생각할 시간이 부족하면 판단이 급해질 수 있어요. 중요한 결정은 ‘하루 숙성’ 같은 안전장치를 권합니다.");
+      } else if (level==="보통"){
+        mid("사람과 혼자 시간 사이에서 균형을 잡는 편입니다. 필요할 때는 나서지만, 과한 소음이나 긴 모임은 피로할 수 있어요.");
+        mid("강점: 상황적 리더십, 조절 능력. 대화에서는 듣기와 말하기가 비교적 균형적입니다.");
+        mid("주의: 낯선 환경에서는 몸이 먼저 긴장할 수 있으니, ‘첫 5분은 질문 1개’ 같은 작은 행동 계획이 도움이 됩니다.");
+      } else {
+        low("혼자 있는 시간에서 에너지를 회복하고, 관찰을 통해 정리한 뒤 말하는 편이 편안할 수 있습니다.");
+        low("강점: 깊이 있는 집중, 신중한 발언, 분석적 관찰. 1:1 소통이나 글로 정리하는 방식에서 강해요.");
+        low("주의: 기회가 ‘사람 사이’에서 생길 때 놓칠 수 있습니다. 부담이 적은 방식(메신저/사전 준비)으로 연결을 늘려보세요.");
+      }
+    }
+
+    if (traitKey==="A"){
+      if (level==="높음"){
+        high("관계의 질과 정서적 안전을 중요하게 생각하는 편입니다. 상대의 입장을 고려하며 갈등을 완화시키는 힘이 있어요.");
+        high("강점: 협력, 신뢰 형성, 팀 케미. 조율과 지원이 필요한 역할에 적합합니다.");
+        high("주의: ‘거절’이 어려워 과부하가 올 수 있습니다. 부탁을 받으면 즉시 수락 대신 ‘확인 후 답’ 습관을 만들어보세요.");
+      } else if (level==="보통"){
+        mid("배려와 현실 감각 사이에서 균형을 잡습니다. 관계를 지키되, 필요하면 의견도 분명히 내는 편이에요.");
+        mid("강점: 합리적 협업, 공정성. 갈등 상황에서 ‘조건을 정리해 합의’하는 능력이 있습니다.");
+        mid("주의: 피로가 쌓이면 냉소적 표현이 나올 수 있습니다. 감정이 올라올 때는 사실과 해석을 분리하는 연습이 도움 됩니다.");
+      } else {
+        low("직설적이고 기준 중심의 소통을 선호할 수 있습니다. 효율과 원칙을 앞세우는 경향이 있어요.");
+        low("강점: 문제 직시, 협상, 냉정한 판단. 경쟁적 환경이나 품질 기준이 필요한 곳에서 강합니다.");
+        low("주의: 관계 비용이 늘 수 있습니다. 같은 내용도 ‘의도+요청’ 구조로 말하면 마찰을 크게 줄일 수 있어요.");
+      }
+    }
+
+    if (traitKey==="N"){
+      if (level==="높음"){
+        high("위험 신호를 빠르게 감지하고 대비하려는 경향이 큽니다. 이 ‘민감함’은 상황을 꼼꼼히 보게 하는 장점이기도 해요.");
+        high("강점: 리스크 감지, 준비성, 타인의 감정 읽기. 위기 상황에서 먼저 경계해 큰 손실을 막기도 합니다.");
+        high("주의: 걱정이 길어지면 에너지가 소모되고 실행이 흔들릴 수 있습니다. ‘걱정 시간 10분’처럼 걱정을 담아두는 틀이 효과적입니다.");
+      } else if (level==="보통"){
+        mid("스트레스에 대한 반응이 평균 범위에 있습니다. 상황에 따라 긴장하지만, 시간이 지나면 회복하는 편입니다.");
+        mid("강점: 현실적 경계심과 적응의 균형. 필요할 때는 꼼꼼하고, 지나친 불안에 머물지 않으려 합니다.");
+        mid("주의: 수면/식사/운동 같은 기본 컨디션이 무너지면 점수가 쉽게 흔들릴 수 있어요. 생활 리듬을 우선순위로 두는 게 좋습니다.");
+      } else {
+        low("정서가 비교적 안정적이고 회복이 빠른 편입니다. 외부 자극에 휘둘리기보다 ‘일단 해보자’로 움직일 수 있어요.");
+        low("강점: 침착함, 위기 대처, 감정 조절. 압박이 큰 상황에서도 중심을 잡는 데 강합니다.");
+        low("주의: 위험 신호를 과소평가할 수 있습니다. 중요한 결정은 ‘최악의 경우’만 3분 생각해도 균형이 좋아집니다.");
+      }
+    }
+
+    return out.trim();
+  }
+
+  function interactionParagraphs(pct, lv, idx){
+    const O=pct.O, C=pct.C, E=pct.E, A=pct.A, N=pct.N;
+    const lines = [];
+
+    // 1) 실행/정서 축
+    if (C>=70 && N>=70){
+      lines.push("• 성실성(C)↑ + 신경성(N)↑: ‘기준이 높은데 불안도 높은’ 조합이라, 성과는 잘 내지만 마음의 피로가 누적되기 쉽습니다. 준비를 더 하면서도 “아직 부족해”라고 느끼는 패턴이 생길 수 있어요. 이때는 기준을 낮추기보다, 기준을 지키는 ‘범위’를 줄이는 전략(핵심 1~2개만 완벽, 나머지는 충분히)으로 균형을 잡는 게 효과적입니다.");
+    } else if (C>=70 && N<40){
+      lines.push("• 성실성(C)↑ + 신경성(N)↓: ‘차분한 실행’ 조합입니다. 계획을 세우고 꾸준히 밀어붙이되 감정 소모가 상대적으로 적어, 장기 프로젝트에서 강점이 크게 나타납니다. 다만 너무 안정적으로 흘러가면 도전이 줄 수 있으니, 작은 혁신 과제(월 1회)를 일부러 넣어보면 성장 폭이 커집니다.");
+    } else if (C<40 && N>=70){
+      lines.push("• 성실성(C)↓ + 신경성(N)↑: 걱정은 많은데 구조가 약해 ‘생각이 실행을 이기는’ 상황이 생길 수 있습니다. 이 조합의 핵심 처방은 의지보다 환경입니다. (1) 시작 장벽을 낮추고, (2) 체크리스트를 최소화하며, (3) 누군가에게 진행을 공유하는 ‘가벼운 약속’을 만들면 크게 좋아집니다.");
+    } else {
+      lines.push("• 실행(C)과 정서(N)의 균형: 현재는 실행력과 긴장감 사이에서 어느 정도 균형을 잡고 있습니다. 컨디션이 좋을 때는 추진이 잘 되고, 피곤할 때는 미루기나 걱정이 늘 수 있어요. 따라서 성과를 안정화하려면 ‘컨디션 관리 루틴’을 점수만큼 중요하게 다루는 게 유리합니다.");
+    }
+
+    // 2) 관계/표현 축
+    if (E>=70 && A>=70){
+      lines.push("• 외향성(E)↑ + 친화성(A)↑: 관계를 넓히고 유지하는 데 강합니다. 사람을 연결해 팀의 속도를 올리고, 분위기를 편하게 만드는 역할이 자연스럽습니다. 단, 부탁이 몰릴 수 있으니 ‘내 업무 시간 블록’을 미리 확보해 두면 과부하를 예방할 수 있어요.");
+    } else if (E>=70 && A<40){
+      lines.push("• 외향성(E)↑ + 친화성(A)↓: 표현은 강한데 직설이 섞일 수 있어 영향력이 커집니다. 설득·리더십에 강점이 있지만, 상대가 ‘압박’으로 느끼면 저항이 생길 수 있습니다. 같은 메시지를 ‘목표(왜)→근거→선택지’ 순서로 제시하면 협조가 크게 올라갑니다.");
+    } else if (E<40 && A>=70){
+      lines.push("• 외향성(E)↓ + 친화성(A)↑: 조용하지만 따뜻한 협업형입니다. 소수 관계에서 깊게 신뢰를 쌓고, 상대를 살피는 능력이 큽니다. 다만 의견이 늦게 나오면 ‘수동적’으로 오해될 수 있어, 회의 전 1줄 메모(핵심 2개)를 준비해두면 존재감이 안정적으로 올라갑니다.");
+    } else {
+      lines.push("• 관계/표현 스타일: 대체로 상황에 맞춰 조절하는 편입니다. 더 편한 방식(대면/문서/메신저)을 알고 그 채널로 소통을 설계하면, 불필요한 소모 없이 관계 품질을 유지할 수 있습니다.");
+    }
+
+    // 3) 창의/탐색 축
+    if (O>=70 && C>=70){
+      lines.push("• 개방성(O)↑ + 성실성(C)↑: ‘아이디어를 실제 성과로 바꾸는’ 매우 좋은 조합입니다. 탐색(아이디어)과 수렴(실행)이 함께 움직여 프로젝트 추진력이 큽니다. 단, 할 수 있는 게 많아 선택이 늘어나면 오히려 지칠 수 있으니, 분기마다 ‘하지 않을 것’ 목록을 만드는 게 큰 도움이 됩니다.");
+    } else if (O>=70 && C<40){
+      lines.push("• 개방성(O)↑ + 성실성(C)↓: 발상이 풍부하지만 지속 실행이 흔들릴 수 있습니다. 이때는 큰 계획보다 “짧은 실험→즉시 피드백” 구조가 맞습니다. 예: 30분 실험, 결과 3줄 기록, 다음 행동 1개만 정하기. 이렇게 하면 창의성이 ‘완성’으로 연결됩니다.");
+    } else if (O<40 && C>=70){
+      lines.push("• 개방성(O)↓ + 성실성(C)↑: 검증된 방식으로 안정적 품질을 내는 조합입니다. 운영·관리·품질 보증에서 신뢰가 높습니다. 다만 변화가 필요한 국면에서 ‘새로운 방식의 작은 파일럿’을 1개만 열어두면, 안정성과 혁신을 동시에 잡을 수 있어요.");
+    } else {
+      lines.push("• 탐색(O)과 구조(C): 현재는 새로운 시도와 안정 운영 사이에서 무리하지 않는 편입니다. 성장 목표가 있다면, ‘새로움’ 또는 ‘루틴’ 중 한 축만 강화해도 전체 체감 성과가 크게 올라갈 수 있습니다.");
+    }
+
+    // 지표 코멘트(간이 수치 해석)
+    lines.push(`• 간이 지표 해석: 사회적 추진력(${fmt1(idx.socialDrive)})은 관계·표현을 통한 영향력, 실행/회복(${fmt1(idx.execution)})은 꾸준함과 정서 회복의 조합, 과부하 위험(${fmt1(idx.riskOfBurnout)})은 “기준+긴장”의 누적 가능성을 뜻합니다. 수치가 높다고 무조건 좋거나 나쁜 게 아니라, ‘관리 포인트가 어디냐’를 알려주는 신호로 보시면 됩니다.`);
+
+    return lines.join("\n\n");
+  }
+
+  function socialAttitudeParagraph(pct, lv, style){
+    const E=pct.E, A=pct.A, N=pct.N;
+    const lines = [];
+    lines.push(`당신은 관계에서 “${(A>=70)?"배려와 조율":(A<40)?"원칙과 직설":"균형과 현실감"}”을 중심으로 움직일 가능성이 큽니다.`);
+    lines.push((E>=70)
+      ? "사람이 있는 환경에서 속도가 붙기 쉽고, 대화로 에너지를 얻는 편입니다. 친밀감이 생기면 빠르게 연결될 수 있어요."
+      : (E<40)
+        ? "관계는 ‘폭’보다 ‘깊이’에 강점이 있을 수 있습니다. 적은 인원과 안정적인 루틴이 편하게 느껴질 가능성이 큽니다."
+        : "상황에 따라 사교성과 혼자 시간을 적절히 조절하는 편입니다. 중요한 관계에 집중하면 만족도가 올라갑니다."
+    );
+    lines.push((N>=70)
+      ? "정서 신호에 민감해 상대의 기분 변화를 빠르게 읽을 수 있지만, 동시에 오해/걱정이 커질 수 있어요. 불확실한 상황에서는 ‘확인 질문’을 한 번 더 하는 것이 관계 안정에 유리합니다."
+      : (N<40)
+        ? "감정적으로 비교적 안정적이라 갈등 상황에서도 중심을 잡기 쉽습니다. 다만 상대가 민감할 때는 ‘공감 한 문장’을 먼저 넣어주면 신뢰가 더 빠르게 쌓입니다."
+        : "기본적으로는 안정적이지만, 컨디션이 나쁘면 예민해질 수 있습니다. 중요한 대화는 피곤할 때보다 여유 있을 때 잡는 게 좋습니다."
+    );
+    lines.push(`현재 프로필(“${style.title}”) 관점에서 보면, 관계의 핵심 과제는 ‘내 에너지를 지키면서도 필요한 연결은 유지하는 것’입니다. 즉, 관계를 늘리기보다, 관계 방식(채널/빈도/경계선)을 설계하는 쪽이 더 효과적일 가능성이 큽니다.`);
+    return lines.join("\n\n");
+  }
+
+  function workLearningParagraph(pct, lv, style){
+    const O=pct.O, C=pct.C, E=pct.E, N=pct.N;
+    const lines = [];
+    lines.push(`일/학습에서는 “${(C>=70)?"구조화된 계획":(C<40)?"흥미 기반 몰입":"필요할 때 구조를 만드는 방식"}”이 성과에 큰 영향을 줍니다.`);
+    lines.push((O>=70)
+      ? "새로운 개념을 빨리 흡수하고, ‘왜 이렇게 되지?’를 파고들어 이해를 넓히는 타입일 수 있어요. 탐색을 ‘짧은 실험’으로 만들면 속도가 더 붙습니다."
+      : (O<40)
+        ? "검증된 자료/방법을 선호할 가능성이 큽니다. 튜토리얼, 예제, 표준 프로세스처럼 ‘정답이 있는 자료’가 잘 맞을 수 있어요."
+        : "실용성과 호기심을 함께 보는 편입니다. 목표가 명확하면 새 방법도 받아들이고, 불필요하면 안정적으로 운영하려는 경향이 있습니다."
+    );
+    lines.push((N>=70)
+      ? "긴장이 높을 때는 작업 전 ‘정리 시간이 길어지고 시작이 늦어지는’ 패턴이 생길 수 있습니다. 시작을 쉽게 만드는 2단계(1단계=1분 정리, 2단계=5분 착수)가 효과적입니다."
+      : (N<40)
+        ? "압박 속에서도 추진이 비교적 안정적일 수 있습니다. 다만 리스크 점검이 부족해질 수 있으니, 큰 일은 ‘체크포인트 2개’만 강제해도 안정성이 좋아집니다."
+        : "평균 범위의 긴장감으로 성과를 내는 편입니다. 일정이 빡빡해질수록 수면/식사 같은 기본 관리가 성과를 좌우합니다."
+    );
+    lines.push((E>=70)
+      ? "토론·피드백·협업 환경에서 동기부여가 잘 생길 수 있습니다. 공개 약속(주간 공유) 같은 장치를 쓰면 실행력이 더 안정화됩니다."
+      : (E<40)
+        ? "혼자 집중할 수 있는 환경에서 효율이 올라갈 수 있습니다. 깊은 일(Deep Work) 시간을 확보하고, 소통은 ‘정리된 문서/메시지’로 하는 방식이 잘 맞습니다."
+        : "혼자 일과 협업을 적절히 섞는 편이 좋습니다. 일정의 앞부분은 혼자 정리, 뒷부분은 피드백 받는 식으로 리듬을 설계해 보세요."
+    );
+    return lines.join("\n\n");
+  }
+
+  function potentialParagraph(pct, lv, style){
+    const O=pct.O, C=pct.C, E=pct.E, A=pct.A;
+    const lines = [];
+    lines.push("잠재 역량은 ‘강점이 필요한 무대’를 찾을 때 크게 살아납니다. 아래는 당신 점수 조합에서 특히 성장 가능성이 큰 영역입니다.");
+    if (O>=70 && C>=70) lines.push("1) 기획/전략/제품/연구처럼 ‘새로운 아이디어를 실행으로 옮기는’ 분야에서 강점이 크게 발휘될 수 있습니다. 아이디어-실행 사이의 연결을 담당하면 성과가 눈에 띄게 누적됩니다.");
+    else if (O>=70) lines.push("1) 탐색/콘텐츠/기획/창의 문제 해결에서 두각이 나타날 수 있습니다. 다양한 입력(책/강의/사람)을 연결해 독특한 관점을 만드는 능력이 강점이 됩니다.");
+    else if (C>=70) lines.push("1) 운영/프로젝트 관리/품질/데이터 정리 같은 ‘안정적 성과 누적’ 영역에서 신뢰를 얻기 쉽습니다. 시스템을 만들어 반복 성과를 내는 데 강점이 있을 수 있어요.");
+    else lines.push("1) 변화에 따라 역할을 바꾸며 적응하는 환경(스타트업/프로젝트형 업무)에서 강점을 찾을 수 있습니다. 다만 성과를 남기려면 ‘기록’이 중요합니다.");
+
+    if (E>=70 && A>=70) lines.push("2) 사람을 연결하고 협업을 촉진하는 역량(커뮤니케이션/리더십/커뮤니티 운영)이 크게 성장할 수 있습니다. 관계망이 곧 자산이 되는 타입입니다.");
+    else if (E>=70) lines.push("2) 발표/설득/영업/협상처럼 ‘에너지로 분위기를 움직이는’ 역할에서 강점이 있습니다. 다만 디테일 검증을 보완하면 영향력이 더 건강해집니다.");
+    else if (A>=70) lines.push("2) 코칭/지원/조율/교육처럼 ‘사람의 상태를 읽고 돕는’ 영역에서 성장 잠재력이 큽니다. 신뢰를 기반으로 성과를 만드는 방식이 맞습니다.");
+    else lines.push("2) 기준을 세우고 문제를 직면하는 역할(평가/리스크 관리/품질 기준 수립)에서 강점이 있을 수 있습니다. 단, 관계 비용을 줄이는 소통 기술이 함께 가면 더 강해집니다.");
+
+    lines.push(`3) 프로필(“${style.title}”) 관점에서, 당신에게 유리한 성장 전략은 ‘강점을 과하게 키우기’보다 ‘약점의 최소 보완’을 통해 강점이 더 잘 발휘되게 만드는 것입니다. 예: 성실성이 낮다면 거대한 계획 대신 3개 체크리스트, 신경성이 높다면 걱정을 담는 틀, 외향성이 낮다면 글로 소통 채널 확보 같은 방식입니다.`);
+    return lines.join("\n\n");
+  }
+
+  function cautionParagraph(pct, lv, style){
+    const C=pct.C, N=pct.N, A=pct.A, E=pct.E;
+    const lines = [];
+    // 기본
+    lines.push("스트레스는 성격 ‘나쁨’이 아니라, 에너지가 새는 위치를 알려주는 신호입니다. 아래 항목 중 2개 이상이 자주 보이면 루틴을 조정할 시점일 수 있어요.");
+
+    // 조건별 경고
+    if (C>=70 && N>=70){
+      lines.push("• 완벽주의 소진 위험: 기준이 높고 걱정이 함께 올라가면, ‘쉬는 중에도 머리가 쉬지 않는’ 상태가 되기 쉽습니다. 휴식도 ‘계획된 휴식(시간/종료 조건)’으로 설계하는 게 도움이 됩니다.");
+    } else if (N>=70){
+      lines.push("• 반추/걱정 루프: 머릿속 시뮬레이션이 길어질 수 있습니다. 생각의 무게를 줄이려면, 걱정을 ‘문장으로 적어 바깥에 두는’ 것만으로도 효과가 큽니다.");
+    } else if (C>=70){
+      lines.push("• 과업 과부하: 책임감이 강하면 부탁을 떠안기 쉽습니다. 업무량이 늘어날수록 ‘거절/위임’ 스킬이 건강을 지킵니다.");
+    } else {
+      lines.push("• 에너지 분산: 목표가 많아지면 집중이 깨질 수 있습니다. 이때는 ‘이번 주 1개만 확실히’ 전략이 효과적입니다.");
+    }
+
+    if (A>=70){
+      lines.push("• 경계선 약화: 배려가 깊을수록 자기 시간을 뒤로 미루기 쉽습니다. 부탁을 받았을 때는 ‘가능 시간/조건’을 먼저 말하면 관계를 지키면서도 과부하를 줄일 수 있어요.");
+    } else if (A<40){
+      lines.push("• 관계 마찰: 효율을 우선하면 상대가 거칠게 느낄 수 있습니다. 요구사항을 말하기 전에 ‘상대의 노력 인정 1문장’을 넣으면 불필요한 갈등이 줄어듭니다.");
+    }
+
+    if (E<40){
+      lines.push("• 사회적 피로: 모임이 연속되면 회복 시간이 필요할 수 있습니다. 일정에 ‘혼자 시간’이 없으면 성과가 빠르게 떨어질 수 있어요.");
+    } else if (E>=70){
+      lines.push("• 과잉 상호작용: 사람을 많이 만나면 에너지가 오르지만, 깊은 정리 시간이 부족하면 판단의 질이 떨어질 수 있습니다. ‘정리 시간 블록’을 일정에 고정해 보세요.");
+    }
+
+    lines.push(`요약하면, 현재 프로필(“${style.title}”)에서 가장 중요한 건강 전략은 “컨디션(수면/식사/운동) + 경계선(시간/요청/기준)”을 동시에 관리하는 것입니다. 이 두 축이 유지되면 강점은 더 선명해지고, 약점은 자동으로 완화됩니다.`);
+    return lines.join("\n\n");
+  }
+
+  function developmentSuggestions(pct, lv, style){
+    const O=pct.O, C=pct.C, E=pct.E, A=pct.A, N=pct.N;
+    const lines = [];
+    lines.push("아래 제언은 ‘작게 시작해서 반복으로 굳히는’ 방식으로 구성했습니다. 하루 5~10분 정도의 미세 루틴부터 적용해 보세요.");
+
+    // C 낮으면 구조 제안, 높으면 완벽주의 완화
+    if (C<40){
+      lines.push("1) 오늘의 3개 체크리스트: ‘가장 중요한 1개 + 쉬운 1개 + 정리 1개’만 적고, 나머지는 과감히 버립니다. 체크가 쌓이면 성실성은 자동으로 따라옵니다.");
+      lines.push("2) 5분 착수 규칙: 시작이 어려운 일은 ‘5분만’ 하고 멈춰도 됩니다. 뇌는 시작 후에 동기가 생기기 때문에, 이 규칙이 미루기를 크게 줄입니다.");
+    } else if (C>=70){
+      lines.push("1) ‘완료 우선’ 기준: 완벽을 100이라면 70에서 제출/공유하고 피드백으로 다듬습니다. 성실함을 ‘속도’로 전환하는 연습입니다.");
+      lines.push("2) 주 1회 ‘하지 않을 것’ 목록: 할 일을 늘리는 대신, 이번 주에 하지 않을 것을 3개 적습니다. 기준은 유지하되 소진을 줄이는 방법입니다.");
+    } else {
+      lines.push("1) 시작 전 1분 설계: 작업 전 ‘목표 1줄·다음 행동 1줄’만 적습니다. 구조를 과하게 만들지 않으면서 추진력을 올릴 수 있어요.");
+      lines.push("2) 주간 회고 10분: 한 주에 한 번, 잘된 것 2개·아쉬운 것 1개·다음 주 실험 1개만 기록합니다.");
+    }
+
+    // N 높으면 정서 루틴, 낮으면 리스크 점검
+    if (N>=70){
+      lines.push("3) 걱정 시간 10분(타이머): 걱정이 올라오면 ‘지금은 걱정 시간’으로 옮기고, 10분 동안만 적습니다. 10분 뒤에는 ‘다음 행동 1개’만 남기고 종료합니다.");
+      lines.push("4) 몸-먼저 안정 루틴: 불안이 올라올 때는 생각으로 해결하려고 하면 더 커질 수 있어요. 4초 들숨-6초 날숨을 5회(1분)만 해도 신체 신호가 내려갑니다.");
+    } else if (N<40){
+      lines.push("3) 최악의 경우 3분 점검: 낙관이 강점이지만, 큰 결정에서는 ‘망할 수 있는 3가지’를 3분만 적어보세요. 과도한 불안 없이 안정성을 얻습니다.");
+      lines.push("4) 회복력 유지 장치: 컨디션이 좋아서 강점이 잘 나오는 타입일 수 있습니다. 수면/식사만 흔들려도 체감이 달라지니, 기본 루틴을 ‘고정’해두는 게 핵심입니다.");
+    } else {
+      lines.push("3) 감정-사실 분리 메모: 불편함이 생기면 ‘사실(무슨 일이 있었나)’과 ‘해석(내가 어떻게 느꼈나)’을 분리해 3줄로 적습니다. 생각이 정리되면서 불필요한 감정 소모가 줄어듭니다.");
+    }
+
+    // E/A에 따른 소통 전략
+    if (E<40){
+      lines.push("5) 소통은 글로 먼저: 회의 전 3줄(목표/근거/요청)을 메신저나 문서로 남기면, 말보다 편하게 영향력을 만들 수 있습니다.");
+    } else if (E>=70){
+      lines.push("5) 말하기 전 ‘한 문장 결론’: 에너지가 높을수록 말이 길어질 수 있어요. 결론 1문장 → 근거 2개 → 요청 1개로 정리하면 설득력이 상승합니다.");
+    } else {
+      lines.push("5) 질문 1개 습관: 낯선 자리에서는 ‘먼저 질문 1개’를 던지면 자연스럽게 대화가 이어지고 부담이 줄어듭니다.");
+    }
+
+    if (A>=70){
+      lines.push("6) 거절 템플릿: “지금은 어렵지만, (가능 시간/대안)을 제안할게.”를 미리 문장으로 저장해두세요. 배려를 잃지 않고 경계를 세우는 기술입니다.");
+    } else if (A<40){
+      lines.push("6) 인정 1문장 + 요청 1문장: “여기까지 해준 점은 고마워. 다음엔 (구체 요청)으로 맞춰보자.” 구조로 말하면 관계 비용이 크게 줄어듭니다.");
+    } else {
+      lines.push("6) 합의의 기록: 말로 끝내지 말고 “우리가 합의한 2가지”를 채팅에 남기면 불필요한 오해가 줄어듭니다.");
+    }
+
+    // O에 따른 성장 루틴
+    if (O>=70){
+      lines.push("7) 월 1회 ‘작은 실험’: 새 도구/새 방식/새 습관을 1개만 골라 2주 실험해 보세요. 개방성의 강점을 ‘경험적 학습’으로 연결합니다.");
+    } else if (O<40){
+      lines.push("7) 변화는 ‘파일럿’로: 큰 변화보다 10%만 바꾸는 파일럿을 권합니다. 예: 새로운 방식은 일주일만 시험하고, 결과가 좋으면 확대합니다.");
+    } else {
+      lines.push("7) 탐색-수렴 리듬: 일단 찾아보고(탐색) 바로 정리해 적용(수렴)하는 2단계를 의식적으로 분리하면 성과가 좋아집니다.");
+    }
+
+    lines.push(`마지막으로, 당신의 프로필(“${style.title}”)은 ‘강점을 쓰는 방식’을 조금만 다듬어도 체감 변화가 큰 편일 가능성이 큽니다. 위 제언 중 가장 부담 없는 1개만 골라 7일 연속으로 해보세요. 성격은 의지가 아니라 ‘반복된 선택’으로 바뀝니다.`);
+
+    return lines.join("\n\n");
+  }
+
+  // ====== 저장/복원 (로컬스토리지) ======
+  const LS_KEY = "big5_singlefile_answers_v1";
+
+  function persistAnswers(){
+    const data = {};
+    for (const q of QUESTIONS){
+      const c = $(`input[name="q${q.id}"]:checked`);
+      if (c) data[q.id] = Number(c.value);
+    }
+    try{
+      localStorage.setItem(LS_KEY, JSON.stringify(data));
+    }catch(_){}
+  }
+
+  function restoreAnswers(){
+    let data = null;
+    try{
+      data = JSON.parse(localStorage.getItem(LS_KEY) || "null");
+    }catch(_){ data=null; }
+
+    if (!data) return;
+
+    for (const q of QUESTIONS){
+      const v = data[q.id];
+      if (v>=1 && v<=5){
+        const input = $(`input[name="q${q.id}"][value="${v}"]`);
+        if (input){
+          input.checked = true;
+          const box = input.closest(".qItem");
+          if (box){
+            $$(".opt", box).forEach(l => l.classList.remove("selected"));
+            const selectedLabel = input.closest("label.opt");
+            if (selectedLabel) selectedLabel.classList.add("selected");
+          }
+        }
+      }
+    }
+  }
+
+  function resetAll(){
+    // radios reset
+    $$('input[type="radio"]').forEach(r => { r.checked = false; });
+    $$(".opt").forEach(l => l.classList.remove("selected"));
+    try{ localStorage.removeItem(LS_KEY); }catch(_){}
+    resultCard.style.display = "none";
+    reportBox.textContent = "";
+    updateScoreUI({O:0,C:0,E:0,A:0,N:0});
+    updateProgress();
+    showToast("응답을 초기화했어요.");
+    window.scrollTo({top:0, behavior:"smooth"});
+  }
+
+  function autoFillDemo(){
+    // 데모용: 약간의 편향을 가진 무작위
+    for (const q of QUESTIONS){
+      // trait별로 기본 성향을 조금씩 다르게
+      let base = 3;
+      if (q.trait==="C") base = 4;
+      if (q.trait==="N") base = 3;
+      if (q.trait==="O") base = 4;
+      if (q.trait==="A") base = 4;
+      if (q.trait==="E") base = 3;
+
+      // 역문항이면 반대로
+      let v = clamp(Math.round(base + (Math.random()*2-1)), 1, 5);
+      const input = $(`input[name="q${q.id}"][value="${v}"]`);
+      if (input){
+        input.checked = true;
+        const box = input.closest(".qItem");
+        if (box){
+          $$(".opt", box).forEach(l => l.classList.remove("selected"));
+          const selectedLabel = input.closest("label.opt");
+          if (selectedLabel) selectedLabel.classList.add("selected");
+        }
+      }
+    }
+    persistAnswers();
+    updateProgress();
+    showToast("데모 응답을 채웠어요. 필요하면 수정하고 제출하세요.");
+    const first = $(".qItem");
+    if (first) first.scrollIntoView({behavior:"smooth", block:"start"});
+  }
+
+  // ====== 제출 ======
+  function submit(){
+    if (countAnswered() !== QUESTIONS.length){
+      showToast("아직 모든 문항에 답하지 않았어요. 빈 문항을 채워주세요.");
+      // 빈 문항으로 스크롤
+      const firstMissing = QUESTIONS.find(q => !$(`input[name="q${q.id}"]:checked`));
+      if (firstMissing){
+        const box = $(`.qItem[data-qid="${firstMissing.id}"]`);
+        if (box) box.scrollIntoView({behavior:"smooth", block:"center"});
+        box?.classList.add("pulse");
+      }
+      return;
+    }
+
+    const scores = computeScores();
+    if (!scores){
+      showToast("점수 계산 중 문제가 발생했어요. 다시 시도해 주세요.");
+      return;
+    }
+
+    updateScoreUI(scores.pct);
+
+    const {report, stamp, style} = buildReport(scores);
+    reportBox.textContent = report;
+    resultMeta.textContent = `프로필: ${style.title} · 생성: ${stamp}`;
+    resultCard.style.display = "block";
+
+    showToast("심층 리포트를 생성했어요.");
+    resultCard.scrollIntoView({behavior:"smooth", block:"start"});
+  }
+
+  // ====== 버튼 ======
+  $("#btnSubmit").addEventListener("click", submit);
+  $("#btnReset").addEventListener("click", resetAll);
+  $("#btnAutofill").addEventListener("click", autoFillDemo);
+
+  $("#btnCopy").addEventListener("click", async () => {
+    const text = reportBox.textContent || "";
+    try{
+      await navigator.clipboard.writeText(text);
+      showToast("리포트를 클립보드에 복사했어요.");
+    }catch(_){
+      // fallback
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      showToast("리포트를 복사했어요.");
+    }
+  });
+
+  $("#btnDownloadTxt").addEventListener("click", () => {
+    const text = reportBox.textContent || "";
+    const blob = new Blob([text], {type:"text/plain;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "big5_report.txt";
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(a.href);
+    a.remove();
+  });
+
+  $("#btnPrint").addEventListener("click", () => {
+    // 간단 인쇄: 리포트만 보기 좋게
+    const content = reportBox.textContent || "";
+    const w = window.open("", "_blank");
+    if (!w) { showToast("팝업이 차단되어 인쇄 창을 열 수 없어요."); return; }
+    w.document.write(`
+      <html><head><meta charset="utf-8" /><title>Big Five 리포트 인쇄</title>
+      <style>
+        body{font-family: system-ui, -apple-system, "Apple SD Gothic Neo","Noto Sans KR", sans-serif; line-height:1.6; padding:24px;}
+        pre{white-space:pre-wrap; font-size:13.5px;}
+        h1{font-size:18px;margin:0 0 10px;}
+        .muted{color:#555;font-size:12px;margin-bottom:14px;}
+      </style></head><body>
+      <h1>Big Five 성격 검사 리포트</h1>
+      <div class="muted">이 문서는 브라우저에서 생성된 결과를 인쇄한 것입니다.</div>
+      <pre>${escapeHtml(content)}</pre>
+      </body></html>
+    `);
+    w.document.close();
+    w.focus();
+    w.print();
+  });
+
+  // ====== HTML escape ======
+  function escapeHtml(s){
+    return String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  // ====== 초기화 ======
+  renderQuestions();
+  renderScoresEmpty();
+  restoreAnswers();
+  updateProgress();
+
+  // 복원된 답이 있으면 요약도 갱신
+  if (countAnswered() === QUESTIONS.length){
+    const scores = computeScores();
+    if (scores) updateScoreUI(scores.pct);
+  } else {
+    updateScoreUI({O:0,C:0,E:0,A:0,N:0});
+  }
+
+})();
+</script>
+</body>
+</html>
